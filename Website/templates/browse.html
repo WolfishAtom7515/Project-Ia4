@@ -1,0 +1,45 @@
+{% extends "basic.html" %}
+
+{% block title %} Browse {% endblock title%}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center">
+    <div class="container">
+        <h1>Explore</h1>
+        {% for category, images in images_by_category.items() %}
+        <div class="category-section">
+            <h2>{{ category }}</h2>
+            <div class="row">
+                {% for image in images %}
+                    {% if not image.endswith('.thumb.jpg') and not image.endswith('.thumb.png') %}
+                        <div class="col-md-4">
+                            {% set thumb_image = image.rsplit('.', 1)[0] + '.thumb.' + image.rsplit('.', 1)[1] %}
+                            <a type="button" class="imageshow" data-bs-toggle="modal" data-bs-target="#imageModal-{{ image }}">
+                                <img src="{{ url_for('static', filename='uploads/Categories/' + category + '/' + thumb_image) }}" class="img-thumbnail" alt="Category Image">
+                            </a>
+                            <div class="modal fade" id="imageModal-{{ image }}" tabindex="-1" aria-labelledby="imageModal-{{ image }}" style="display: none;" aria-hidden="true">
+                                <div class="modal-dialog modal-fullscreen">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h1 class="modal-title fs-4" id="imageModal-{{ image }}">Zoomed Photo</h1>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <img id="modalImage" class="img-fluid" src="{{ url_for('static', filename='uploads/Categories/' + category + '/' + image) }}" alt="">
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock content %}
+

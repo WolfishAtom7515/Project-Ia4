@@ -1,0 +1,5 @@
+flask
+pillow
+flask_login
+flask_sqlalchemy
+Werkzeug
