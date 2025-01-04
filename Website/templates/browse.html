@@ -11,24 +11,47 @@
             <h2>{{ category }}</h2>
             <div class="row">
                 {% for image in images %}
-                    {% if not image.endswith('.thumb.jpg') and not image.endswith('.thumb.png') %}
+                    {% if not image.filename.endswith('.thumb.jpg') and not image.filename.endswith('.thumb.png') %}
                         <div class="col-md-4">
-                            {% set thumb_image = image.rsplit('.', 1)[0] + '.thumb.' + image.rsplit('.', 1)[1] %}
-                            <a type="button" class="imageshow" data-bs-toggle="modal" data-bs-target="#imageModal-{{ image }}">
+                            {% set thumb_image = image.filename.rsplit('.', 1)[0] + '.thumb.' + image.filename.rsplit('.', 1)[1] %}
+                            <a type="button" class="imageshow" data-bs-toggle="modal" data-bs-target="#imageModal-{{ image.id }}">
                                 <img src="{{ url_for('static', filename='uploads/Categories/' + category + '/' + thumb_image) }}" class="img-thumbnail" alt="Category Image">
                             </a>
-                            <div class="modal fade" id="imageModal-{{ image }}" tabindex="-1" aria-labelledby="imageModal-{{ image }}" style="display: none;" aria-hidden="true">
+                            <div class="modal fade" id="imageModal-{{ image.id }}" tabindex="-1" aria-labelledby="imageModal-{{ image.id }}" style="display: none;" aria-hidden="true">
                                 <div class="modal-dialog modal-fullscreen">
                                     <div class="modal-content">
                                         <div class="modal-header">
-                                            <h1 class="modal-title fs-4" id="imageModal-{{ image }}">Zoomed Photo</h1>
+                                            <h1 class="modal-title fs-4" id="imageModal-{{ image.id }}">Zoomed Photo</h1>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
                                         <div class="modal-body">
-                                            <img id="modalImage" class="img-fluid" src="{{ url_for('static', filename='uploads/Categories/' + category + '/' + image) }}" alt="">
+                                            <img id="modalImage" class="img-fluid" src="{{ url_for('static', filename='uploads/Categories/' + category + '/' + image.filename) }}" alt="">
+                                            <h3>Comments</h3>
+                                            <ul id="comments-{{ image.id }}">
+                                                {% for comment in image.comments %}
+                                                    <li id="comment-{{ comment.id }}">
+                                                        <strong>{{ comment.user.username }}:</strong> {{ comment.text }} <em>{{ comment.timestamp }}</em>
+                                                        {% if comment.user_id == current_user.id %}
+                                                            <form action="{{ url_for('like.delete_comment', comment_id=comment.id) }}" method="post" class="delete-comment-form" data-comment-id="{{ comment.id }}">
+                                                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                                            </form>
+                                                        {% endif %}
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                            <form action="{{ url_for('like.comment_photo', photo_id=image.id) }}" method="post" class="comment-form" data-photo-id="{{ image.id }}">
+                                                <div class="mb-3">
+                                                    <label for="commentText" class="form-label">Add a comment</label>
+                                                    <textarea class="form-control" id="commentText" name="text" rows="3"></textarea>
+                                                </div>
+                                                <button type="submit" class="btn btn-primary">Submit</button>
+                                            </form>
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="button" class="btn btn-primary like-toggle" data-photo-id="{{ image.id }}" data-liked="{{ 'true' if image.is_liked_by(current_user) else 'false' }}">
+                                                {{ 'Unlike' if image.is_liked_by(current_user) else 'Like' }}
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -41,5 +64,90 @@
         {% endfor %}
     </div>
 </div>
-{% endblock content %}
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    document.querySelectorAll('.like-toggle').forEach(function(button) {
+        button.addEventListener('click', function() {
+            const photoId = button.dataset.photoId;
+            const liked = button.dataset.liked === 'true';
+            const url = liked ? `${unlikePhotoUrlBase}${photoId}` : `${likePhotoUrlBase}${photoId}`;
+            fetch(url, {
+                method: 'POST'
+            }).then(response => response.json()).then(data => {
+                if (data.success) {
+                    button.dataset.liked = !liked;
+                    button.textContent = liked ? 'Like' : 'Unlike';
+                }
+            });
+        });
+    });
+
+    document.querySelectorAll('.comment-form').forEach(function(form) {
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const photoId = form.dataset.photoId;
+            const formData = new FormData(form);
+            fetch(form.action, {
+                method: 'POST',
+                body: formData
+            }).then(response => response.json()).then(data => {
+                if (data.success) {
+                    const commentsList = document.getElementById(`comments-${photoId}`);
+                    const newComment = document.createElement('li');
+                    newComment.id = `comment-${data.comment.id}`;
+                    newComment.innerHTML = `<strong>${data.comment.user.username}:</strong> ${data.comment.text} <em>${data.comment.timestamp}</em>`;
+                    if (data.comment.user_id === currentUserId) {
+                        const deleteForm = document.createElement('form');
+                        deleteForm.action = `${deleteCommentUrlBase}${data.comment.id}`;
+                        deleteForm.method = 'post';
+                        deleteForm.classList.add('delete-comment-form');
+                        deleteForm.dataset.commentId = data.comment.id;
+                        deleteForm.innerHTML = '<button type="submit" class="btn btn-danger btn-sm">Delete</button>';
+                        newComment.appendChild(deleteForm);
+
+                        deleteForm.addEventListener('submit', function(event) {
+                            event.preventDefault();
+                            const commentId = deleteForm.dataset.commentId;
+                            fetch(deleteForm.action, {
+                                method: 'POST'
+                            }).then(response => response.json()).then(data => {
+                                if (data.success) {
+                                    const commentElement = document.getElementById(`comment-${commentId}`);
+                                    commentElement.remove();
+                                }
+                            });
+                        });
+                    }
+                    commentsList.appendChild(newComment);
+                    form.reset();
+                }
+            });
+        });
+    });
+
+    document.addEventListener('submit', function(event) {
+        if (event.target.classList.contains('delete-comment-form')) {
+            event.preventDefault();
+            const commentId = event.target.dataset.commentId;
+            fetch(event.target.action, {
+                method: 'POST'
+            }).then(response => response.json()).then(data => {
+                if (data.success) {
+                    const commentElement = document.getElementById(`comment-${commentId}`);
+                    commentElement.remove();
+                }
+            });
+        }
+    });
+});
+</script>
+<script>
+    const likePhotoUrlBase = "{{ url_for('like.like_photo', photo_id=0) }}".slice(0, -1);
+    const unlikePhotoUrlBase = "{{ url_for('like.unlike_photo', photo_id=0) }}".slice(0, -1);
+    const deleteCommentUrlBase = "{{ url_for('like.delete_comment', comment_id=0) }}".slice(0, -1);
+    const currentUserId = "{{ current_user.id }}";
+</script>
+
+{% endblock content %}

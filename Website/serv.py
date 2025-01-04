@@ -2,6 +2,7 @@ from flask import Blueprint, flash, render_template, request, redirect, url_for,
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from PIL import Image 
+from .users_cl import Photo, db
 import random
 import os
 
@@ -67,10 +68,17 @@ def gallery(username):
             file.seek(0)
             file.save(category_file_path)
 
-            # Create and save the thumbnail
             thumbnail_filename = f"{filename.rsplit('.', 1)[0]}.thumb.{ext}"
             thumbnail_path = os.path.join(category_folder, thumbnail_filename)
             create_thumbnail(file_path, thumbnail_path, (200, 200))
+
+            # Save photo to database
+            new_photo = Photo(filename=filename, category=categories)
+            db.session.add(new_photo)
+            db.session.commit()
+
+            # Debugging: Print saved photo details
+            print(f"Saved Photo: {new_photo}")
 
             flash('File successfully uploaded', 'success')
             return redirect(url_for('serv.gallery', username=username))
@@ -78,25 +86,39 @@ def gallery(username):
     images = os.listdir(user_folder)
     return render_template("gallery.html", user=current_user, images=images, upload_folder=user_folder)
 
-
-
 @serv.route('/browse')
+@login_required
 def browse():
     categories_folder = os.path.join(current_app.config['UPLOAD_FOLDER'], 'Categories')
     if not os.path.exists(categories_folder):
         os.makedirs(categories_folder)
 
     categories = [d for d in os.listdir(categories_folder) if os.path.isdir(os.path.join(categories_folder, d))]
-    random.shuffle(categories)
 
+    random.shuffle(categories)
     images_by_category = {}
+    
     for category in categories:
         category_path = os.path.join(categories_folder, category)
-        images = [f for f in os.listdir(category_path) if allowed_file(f)]
+        image_filenames = [f for f in os.listdir(category_path) if allowed_file(f)]
+        print(f"Category: {category}, Image filenames: {image_filenames}")  # Debugging: Print image filenames
+        images = Photo.query.filter_by(category=category).filter(Photo.filename.in_(image_filenames)).all()
+        print(f"Category: {category}, Images: {images}")  # Debugging: Print images
         images_by_category[category] = images
+
+    # Debugging: Print images_by_category
+    print("Images by category:", images_by_category)
 
     return render_template("browse.html", user=current_user, images_by_category=images_by_category)
 
+@serv.route('/debug_photos')
+@login_required
+def debug_photos():
+    photos = Photo.query.all()
+    print("YESSS")
+    for photo in photos:
+        print(f"Photo ID: {photo.id}, Filename: {photo.filename}, Category: {photo.category}")
+    return "Check the logs for photo details."
 
 def create_thumbnail(input_image_path, output_image_path, size):
     with Image.open(input_image_path) as image:

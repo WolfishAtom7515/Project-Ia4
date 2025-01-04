@@ -1,5 +1,7 @@
 ## Bobei Bogdan Dumitru - 314 CC
 
+docker run --privileged -p 5000:5000 -v e:/Develop/Ia1/Lab2/instance:/usr/src/app/instance -v e:/Develop/Ia1/Lab2/Website/static/uploads:/usr/src/app/Website/static/uploads myapp
+
 ## Welcome to DeranoStock!
 At DeranoStock, we understand the importance of preserving your precious memories. Whether it's capturing special moments with loved ones, documenting your travels, or showcasing your creative work, your images deserve a safe and secure home. You can make right now an account and use it as you like. (P.S. if you want to log in to an already made account here is the password and gmail account: gmail: bogdanbobeifox@gmail.com & psw: 123456 )
 
