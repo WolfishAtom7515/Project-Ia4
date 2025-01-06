@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from PIL import Image 
 from .users_cl import Photo, db
+from .recommendation_system import create_dataset, find_3rd_nearest_neighbours, create_users, generate_recs, photo_mappings
 import random
 import os
 
@@ -86,6 +87,27 @@ def gallery(username):
     images = os.listdir(user_folder)
     return render_template("gallery.html", user=current_user, images=images, upload_folder=user_folder)
 
+@serv.route('/for_you')
+@login_required
+def for_you():
+    # generate recommendations
+    create_users()
+    [users, recs_matrix] = create_dataset()
+    [similarities, similar_users] = find_3rd_nearest_neighbours(users, recs_matrix)
+    recs = generate_recs(users, recs_matrix, similarities, similar_users)
+    [photos, photo_dict] = photo_mappings()
+
+    recommended_photos = []
+    for photo_index in recs.keys():
+        # photo_id = photo_dict[photo_index]
+        photo_id = list(photo_dict.keys())[list(photo_dict.values()).index(photo_index)]
+        photo_name = Photo.query.filter_by(id=photo_id).first().filename
+        photo_category = Photo.query.filter_by(id=photo_id).first().category
+        filepath = os.path.join(photo_category, photo_name)
+        recommended_photos.append(filepath)
+    
+    return render_template("for_you.html", user=current_user, images=recommended_photos)
+
 @serv.route('/browse')
 @login_required
 def browse():
@@ -97,7 +119,7 @@ def browse():
 
     random.shuffle(categories)
     images_by_category = {}
-    
+
     for category in categories:
         category_path = os.path.join(categories_folder, category)
         image_filenames = [f for f in os.listdir(category_path) if allowed_file(f)]

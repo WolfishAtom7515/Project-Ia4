@@ -1,0 +1,52 @@
+{% extends "basic.html" %}
+
+{% block title %} For You {% endblock title %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center">
+    <div class="container">
+        <h1>For You</h1>
+        <div class="row">
+            {% for image in images %}
+                <div class="col-md-4">
+                    {% set thumb_image = image.rsplit('.', 1)[0] + '.thumb.' + image.rsplit('.', 1)[1] %}
+                    <a type="button" class="imageshow" data-bs-toggle="modal" data-bs-target="#imageModal-{{ loop.index }}">
+                        <img src="{{ url_for('static', filename='uploads/Categories/' + thumb_image) }}" class="img-thumbnail" alt="Recommended Image">
+                    </a>
+                    <!-- Modal for each image -->
+                    <div class="modal fade" id="imageModal-{{ loop.index }}" tabindex="-1" aria-labelledby="imageModal-{{ loop.index }}" style="display: none;" aria-hidden="true">
+                        <div class="modal-dialog modal-fullscreen">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-4" id="imageModal-{{ loop.index }}">Zoomed Photo</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <img id="modalImage" class="img-fluid" src="{{ url_for('static', filename='uploads/Categories/' + image) }}" alt="Image">
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary like-toggle" data-photo-index="{{ loop.index }}" data-liked="false">Like</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Like/Unlike toggle functionality
+    document.querySelectorAll('.like-toggle').forEach(function(button) {
+        button.addEventListener('click', function() {
+            const liked = button.dataset.liked === 'true';
+            button.dataset.liked = !liked;
+            button.textContent = liked ? 'Like' : 'Unlike';
+        });
+    });
+});
+</script>
+{% endblock content %}

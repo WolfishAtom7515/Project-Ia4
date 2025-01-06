@@ -3,4 +3,6 @@ pillow
 flask_login
 flask_migrate
 flask_sqlalchemy
+numpy
+pandas
 Werkzeug

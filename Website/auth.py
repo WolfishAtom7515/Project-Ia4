@@ -1,7 +1,7 @@
 from flask import Blueprint, flash,render_template, redirect, request, url_for
 from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-
+from .recommendation_system import create_users
 from .users_cl import User
 from . import db
 
@@ -9,6 +9,7 @@ auth = Blueprint('auth', __name__)
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
+    create_users()
     if request.method == 'POST':
 
         email = request.form.get('email')
