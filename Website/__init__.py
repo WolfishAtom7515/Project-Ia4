@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template, redirect
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import os
@@ -14,6 +14,7 @@ def create_app():
     app.secret_key = 'fdfsd dsdgfs'
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'
     app.config['UPLOAD_FOLDER'] = '/usr/src/app/Website/static/uploads/'
+    app.config['CHAT_FOLDER'] = '/usr/src/app/Website/static/chats/'
     db.init_app(app)
     migrate.init_app(app, db)
     
@@ -36,6 +37,10 @@ def create_app():
     @login_manager.user_loader
     def load_user(id):
         return User.query.get(int(id))
+
+    @app.context_processor
+    def inject_user():
+        return dict(user=current_user)
 
     return app
 

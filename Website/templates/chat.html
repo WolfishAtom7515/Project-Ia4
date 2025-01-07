@@ -1,0 +1,57 @@
+{% extends "basic.html" %}
+
+{% block title %} Chat {% endblock title%}
+
+{% block content %}
+<style>
+  .chat-container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  .message {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    background-color: #e9ecef;
+  }
+  .message strong {
+    color: #007bff;
+  }
+  .message:nth-child(odd) {
+    background-color: #e0f1f5;
+  }
+  .message:nth-child(even) {
+    background-color: #ebf3f8;
+  }
+  .message small {
+    display: block;
+    margin-top: 5px;
+    color: #6c757d;
+  }
+  .form-group textarea {
+    resize: none;
+  }
+</style>
+
+<div class="container chat-container">
+  <h3 class="text-center">{{ chat.display_title }}</h3>
+  <div class="messages">
+    {% for message in messages %}
+    <div class="message">
+      <strong>{{ message.username }}:</strong> {{ message.content }}
+      <small class="text-muted">{{ message.timestamp }}</small>
+    </div>
+    {% endfor %}
+  </div>
+  <form action="{{ url_for('serv.send_message', chat_id=chat.id) }}" method="post">
+    <div class="form-group">
+      <textarea name="content" class="form-control" rows="3" placeholder="Type your message..."></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary mt-2">Send</button>
+  </form>
+</div>
+{% endblock content %}

@@ -2,8 +2,9 @@ from flask import Blueprint, flash, render_template, request, redirect, url_for,
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from PIL import Image 
-from .users_cl import Photo, db
+from .users_cl import User, Chat, Photo, db
 from .recommendation_system import create_dataset, find_3rd_nearest_neighbours, create_users, generate_recs, photo_mappings
+from . import db
 import random
 import os
 
@@ -141,6 +142,58 @@ def debug_photos():
     for photo in photos:
         print(f"Photo ID: {photo.id}, Filename: {photo.filename}, Category: {photo.category}")
     return "Check the logs for photo details."
+
+@serv.route('/messages')
+@login_required
+def messages():
+    chats = Chat.query.filter(Chat.users.any(id=current_user.id)).all()
+    for chat in chats:
+        messages = chat.get_messages()
+        last_message = messages[-1] if messages else None
+        chat.last_message_time = last_message['timestamp'] if last_message else None
+        chat.last_message_preview = last_message['content'] if last_message else "No messages yet"
+        chat.last_message_sender = User.query.get(last_message['user_id']).username if last_message else "N/A"
+        other_user = next(user for user in chat.users if user.id != current_user.id)
+        chat.display_title = f"Chat with {other_user.username}"
+    return render_template('messages.html', chats=chats)
+
+@serv.route('/chat/<int:chat_id>')
+@login_required
+def chat(chat_id):
+    chat = Chat.query.get_or_404(chat_id)
+    messages = chat.get_messages()
+    for message in messages:
+        message['username'] = User.query.get(message['user_id']).username
+    other_user = next(user for user in chat.users if user.id != current_user.id)
+    chat.display_title = f"Chat with {other_user.username}"
+    return render_template('chat.html', chat=chat, messages=messages)
+
+@serv.route('/chat/<int:chat_id>/send', methods=['POST'])
+@login_required
+def send_message(chat_id):
+    content = request.form['content']
+    chat = Chat.query.get_or_404(chat_id)
+    chat.add_message(user_id=current_user.id, content=content)
+    return redirect(url_for('serv.chat', chat_id=chat_id))
+
+@serv.route('/new_chat', methods=['GET', 'POST'])
+@login_required
+def new_chat():
+    if request.method == 'POST':
+        user_id = request.form.get('user_id')
+        user = User.query.get(user_id)
+        if user:
+            chat = Chat(title=f"Chat with {user.username}")
+            chat.users.append(current_user)
+            chat.users.append(user)
+            db.session.add(chat)
+            db.session.commit()
+            return redirect(url_for('serv.chat', chat_id=chat.id))
+        else:
+            flash('User not found', 'error')
+    users = User.query.filter(User.id != current_user.id).all()
+    return render_template('new_chat.html', users=users)
+
 
 def create_thumbnail(input_image_path, output_image_path, size):
     with Image.open(input_image_path) as image:
