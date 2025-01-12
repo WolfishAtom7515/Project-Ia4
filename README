@@ -1,27 +1,43 @@
-## Bobei Bogdan Dumitru - 314 CC
+## Welcome to Pictogram
 
-docker run --privileged -p 5000:5000 -v e:/Develop/Ia1/Lab2/instance:/usr/src/app/instance -v e:/Develop/Ia1/Lab2/Website/static/uploads:/usr/src/app/Website/static/uploads myapp
+Pictogram is your go-to platform for discovering, organizing, and sharing creative inspirations. Whether you're an artist, a designer, or simply someone who loves collecting visual ideas, Pictogram is here to help you turn your vision into reality.
 
-## Welcome to DeranoStock!
-At DeranoStock, we understand the importance of preserving your precious memories. Whether it's capturing special moments with loved ones, documenting your travels, or showcasing your creative work, your images deserve a safe and secure home. You can make right now an account and use it as you like. (P.S. if you want to log in to an already made account here is the password and gmail account: gmail: bogdanbobeifox@gmail.com & psw: 123456 )
+### https://github.com/WolfishAtom7515/Project-Ia4
 
 ## Our Mission
-Our mission at DeranoStock is simple: to provide you with a reliable platform to store and organize your images with ease. We aim to empower you to create, share, and cherish your memories for years to come.
+At Pictogram, our mission is to empower creators and dreamers by providing a seamless platform to curate and share your ideas. We aim to inspire creativity, connect like-minded individuals, and bring your inspirations to life.
 
 ## Key Features
-Secure Image Storage: Your images are stored securely in our database, ensuring that they remain safe and accessible whenever you need them.
-User-Friendly Interface: Our intuitive interface makes it easy for you to upload, view, and manage your images with just a few clicks.
+- Pin Your Inspirations: Save and organize your favorite images, ideas, and inspirations into customizable boards.
+- Discover Endless Ideas: Browse a vast collection of content from a global community to spark your creativity.
+- Share Your Style: Publish your own pins to showcase your creativity and connect with others who share your passion.
+- Follow What You Love: Create a personalized feed by following users, boards, or topics that match your interests.
+- Search and Explore: Use advanced search tools and categories to easily find content tailored to your needs.
 
-## Collaboration and Sharing: 
-Share your galleries with friends and family, or collaborate with others on projects by granting them access to specific images or galleries.
-Easy Search: Quickly find the images you're looking for in our database with just one click!
-Get Started
-Ready to start preserving your memories with DeranoStock? Sign up for an account today and unlock a world of possibilities for your images.
+## How to use it
 
-Join DeranoStock and embark on a journey to safeguard your memories for generations to come!
+You simply need to execute ./GoDocker.sh !
+
+
+## Meet the team
+
+### Alexandra Prigoreanu
+Spearheaded the development of the recommendation system for Pictogram. Her work ensures that users receive personalized suggestions based on their preferences, making their experience seamless and inspiring.
+
+### George Cărpinișan
+Implemented the chat system, enabling users to connect and communicate directly with each other. His efforts facilitate real-time interactions, fostering a vibrant and engaging community on the platform.
+
+### Bobei Bogdan-Dumitru
+Designed and developed the database for managing user-uploaded photos, ensuring efficient storage and retrieval. He also built the Like and Comment system, empowering users to engage with content and express their appreciation.
+
+### George-Andrei Niță-Pîrvu
+Handled the hosting and backend setup for Pictogram, ensuring the platform's infrastructure is robust and supports real-time communication. His work guarantees that users can chat and collaborate without interruptions.
+
+## The Difficulties
+During the project, we encountered a significant challenge related to hosting. Our team was unable to connect to the same network because the OpenVPN program did not support mobile data addresses. This limitation required additional troubleshooting and workarounds to ensure collaboration.
 
 ## Technologies Used
-Backend: Flask, Flask-Login, Flask-SQLAlchemy, Werkzeug;
+Backend: Flask, Flask-Login, Flask-SQLAlchemy, Werkzeug,;
 
 Frontend: HTML, Jinja3, Bootstrap;
 
