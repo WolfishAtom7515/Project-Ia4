@@ -20,10 +20,10 @@ def allowed_file(filename):
 def home():
     return render_template("home.html", user=current_user)
 
-@serv.route('/about_me')
+@serv.route('/about_us')
 @login_required
-def about_me():
-    return render_template("about_me.html", user=current_user)
+def about_us():
+    return render_template("about_us.html", user=current_user)
 
 @serv.route('/gallery/<username>', methods=['GET', 'POST'])
 @login_required
