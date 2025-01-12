@@ -2,6 +2,7 @@ from flask import current_app
 from . import db
 from flask_login import UserMixin
 from datetime import datetime
+from .encryption import encrypt_message, decrypt_message
 import os
 import json
 
@@ -55,6 +56,8 @@ class Chat(db.Model):
                 if line.strip():
                     message = json.loads(line.strip())
                     message['timestamp'] = datetime.fromisoformat(message['timestamp']).strftime('%H:%M %d-%m-%Y')
+                    decrypted_message = decrypt_message(message['content'])
+                    message['content'] = decrypted_message
                     messages.append(message)
         return messages
 

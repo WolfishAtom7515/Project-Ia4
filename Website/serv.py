@@ -4,6 +4,7 @@ from werkzeug.utils import secure_filename
 from PIL import Image 
 from .users_cl import User, Chat, Photo, db
 from .recommendation_system import create_dataset, find_3rd_nearest_neighbours, create_users, generate_recs, photo_mappings
+from .encryption import encrypt_message, decrypt_message
 from . import db
 import random
 import os
@@ -173,7 +174,7 @@ def chat(chat_id):
 def send_message(chat_id):
     content = request.form['content']
     chat = Chat.query.get_or_404(chat_id)
-    chat.add_message(user_id=current_user.id, content=content)
+    chat.add_message(user_id=current_user.id, content=encrypt_message(content))
     return redirect(url_for('serv.chat', chat_id=chat_id))
 
 @serv.route('/new_chat', methods=['GET', 'POST'])

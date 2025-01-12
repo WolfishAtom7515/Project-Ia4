@@ -6,3 +6,4 @@ flask_sqlalchemy
 numpy
 pandas
 Werkzeug
+cryptography
